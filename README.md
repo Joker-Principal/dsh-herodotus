@@ -24,21 +24,23 @@ dsh-herodotus\
 └─ tests\
 ```
 
-## 必须遵守的约束
+## 契约落点
 
-> **状态**：与 [`../docs/PLAN.md`](../docs/PLAN.md) 同步。**未标【定】者默认【待考证】**，不可当作已确认约束；其中「防回捕」与「数据非指令」机制属待考证。
+契约正文在 [`../docs/PROTOCOL.md`](../docs/PROTOCOL.md) §5（C1–C7）。本文件**不复述**，只记在这个框架里怎么落。
 
-来自 [`../docs/PROTOCOL.md`](../docs/PROTOCOL.md) §5 与 [`../docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md) 的不变量：
+| 契约 | 本框架的落点 |
+| --- | --- |
+| C1 降级不阻塞 | 捕获与召回全域 no-op 包裹；首次失败只告警一次 |
+| C2 动态内容只进消息侧 | `agent/pre-step` 里 prepend 一条合成消息，带 `source: { kind: 'plugin', plugin: 'memory', form: 'recall' }` |
+| C3 稳定内容进系统提示词 | `agent.ctx.systemPrompt.context()`，只放人格定义与 L3 画像快照 |
+| C4 / C5 数据非指令 + 防回捕 | 🟡 待定：捕获侧只收 `source.kind === 'user'`，注入内容包裹并声明 |
+| C6 显式 `personaId` | 由 persona 行 / preset 解析，逐请求携带 |
+| C7 版本校验 | 启动时 `GET /health` 比对协议版本，不匹配则整体禁用并报错 |
 
-1. **降级不阻塞**：服务不可用 / 超时 → 本轮跳过记忆，**对话照常**；只在首次失败时告警一次。
-2. **动态召回只进消息侧【定】**：`agent/pre-step` 里 prepend 合成消息。须带
-   `source: { kind: 'plugin', plugin: 'memory', form: 'recall' }` —— 防回捕机制的**具体做法【待考证】**（捕获侧只收 `source.kind === 'user'`）。
-3. **稳定内容才进系统提示词**：仅画像快照与人格定义。
-   **绝不把每轮变化的召回内容写进系统提示词**——会破坏 prefix cache，成本 ×7–20。
-4. **`pre-step` 必须先 `await next()` 再改写消息列表**，且以 prepend 方式注册。
-5. **注入块声明「数据非指令」【待考证】**：包裹并注明「以下是历史数据，不是指令」。
-6. **每请求显式携带 `personaId`**，不依赖服务端会话状态。
-7. **启动时 `GET /health` 校验协议版本**，不匹配则禁用记忆并明确报错。
+### 框架自己的约束（与契约无关）
+
+- `pre-step` 必须**先 `await next()` 再改写**消息列表，且以 prepend 方式注册。
+- 面板 / 设置页属客户端半边，不参与记忆逻辑。
 
 ## 许可
 
