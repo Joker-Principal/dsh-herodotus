@@ -18,7 +18,7 @@
 
 ```
 dsh-herodotus\
-├─ package.json  tsconfig.json          （P5）
+├─ package.json  tsconfig.json          （V0）
 ├─ src\           host 侧：捕获、注入、工具、稳定区注入
 ├─ client\        浏览器半边：面板、设置页、召回可视化
 └─ tests\
